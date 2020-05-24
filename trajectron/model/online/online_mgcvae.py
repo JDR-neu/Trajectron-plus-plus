@@ -48,7 +48,7 @@ class OnlineMultimodalGenerativeCVAE(MultimodalGenerativeCVAE):
 
         dynamic_class = getattr(dynamic_module, self.hyperparams['dynamic'][self.node_type]['name'])
         dyn_limits = hyperparams['dynamic'][self.node_type]['limits']
-        self.dynamic = dynamic_class(self.env.scenes[0].dt, dyn_limits, device, self.model_registrar, self.x_size)
+        self.dynamic = dynamic_class(self.env.scenes[0].dt, dyn_limits, device, self.model_registrar, self.x_size, self.node_type)
 
     def create_graphical_model(self):
         """
@@ -137,6 +137,9 @@ class OnlineMultimodalGenerativeCVAE(MultimodalGenerativeCVAE):
 
         our_inputs = inputs[self.node]
         our_inputs_st = inputs_st[self.node]
+
+        node_present_state_st = our_inputs_st
+        self.n_s_t0 = node_present_state_st
 
         initial_dynamics = dict()
         initial_dynamics['pos'] = our_inputs_st[:, 0:2]  # TODO: Generalize
@@ -342,7 +345,6 @@ class OnlineMultimodalGenerativeCVAE(MultimodalGenerativeCVAE):
                                              inputs_st,
                                              inputs_np,
                                              robot_present_and_future)
-
         self.latent.p_dist = self.p_z_x(mode, self.x)
 
     # robot_future_st is optional here since you can use the same one from encoder_forward,
@@ -377,11 +379,9 @@ class OnlineMultimodalGenerativeCVAE(MultimodalGenerativeCVAE):
                                                               most_likely_z=z_mode,
                                                               full_dist=full_dist,
                                                               all_z_sep=all_z_sep)
-
-        _, our_sampled_future = self.p_y_xz(mode, self.x, x_nr_t, y_r, z,
+        _, our_sampled_future = self.p_y_xz(mode, self.x, x_nr_t, y_r, self.n_s_t0, z,
                                             prediction_horizon,
                                             num_samples,
                                             num_components,
                                             gmm_mode)
-
         return our_sampled_future

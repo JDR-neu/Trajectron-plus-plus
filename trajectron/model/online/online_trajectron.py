@@ -4,8 +4,9 @@ from collections import Counter
 from model.trajectron import Trajectron
 from model.online.online_mgcvae import OnlineMultimodalGenerativeCVAE
 from model.model_utils import ModeKeys
-from data import RingBuffer, TemporalSceneGraph, SceneGraph, derivative_of
-
+from environment.data_structures import RingBuffer
+from environment.scene_graph import TemporalSceneGraph, SceneGraph
+from environment.data_utils import derivative_of
 
 class OnlineTrajectron(Trajectron):
     def __init__(self, model_registrar,
@@ -273,7 +274,6 @@ class OnlineTrajectron(Trajectron):
                                                            gmm_mode,
                                                            full_dist,
                                                            all_z_sep)
-
         return predictions_dict
 
     def forward(self, init_env,

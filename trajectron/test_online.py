@@ -1,3 +1,5 @@
+# usage: python test_online.py --conf ../experiments/pedestrians/models/eth_vel/config.json --eval_data_dict eth_val.pkl
+
 import os
 import time
 import json
@@ -11,7 +13,8 @@ import visualization as vis
 from argument_parser import args
 from model.online.online_trajectron import OnlineTrajectron
 from model.model_registrar import ModelRegistrar
-from data import Environment, Scene
+from environment.environment import Environment
+from environment.scene import Scene
 import matplotlib.pyplot as plt
 
 if not torch.cuda.is_available() or args.device == 'cpu':
@@ -59,10 +62,11 @@ def create_online_env(env, hyperparams, scene_idx, init_timestep):
 
 
 def main():
-    model_dir = os.path.join(args.log_dir, 'models_14_Jan_2020_00_24_21eth_no_rob')
+    model_dir = os.path.join(args.log_dir, 'models_07_Apr_2020_12_03_36_eth_vel_ar3')
 
     # Load hyperparameters from json
-    config_file = os.path.join(model_dir, args.conf)
+    config_file = args.conf
+    # config_file = os.path.join(model_dir, args.conf)
     if not os.path.exists(config_file):
         raise ValueError('Config json not found!')
     with open(config_file, 'r') as conf_json:
@@ -78,12 +82,12 @@ def main():
     hyperparams['k_eval'] = args.k_eval
     hyperparams['offline_scene_graph'] = args.offline_scene_graph
     hyperparams['incl_robot_node'] = args.incl_robot_node
-    hyperparams['scene_batch_size'] = args.scene_batch_size
-    hyperparams['node_resample_train'] = args.node_resample_train
-    hyperparams['node_resample_eval'] = args.node_resample_eval
-    hyperparams['scene_resample_train'] = args.scene_resample_train
-    hyperparams['scene_resample_eval'] = args.scene_resample_eval
-    hyperparams['scene_resample_viz'] = args.scene_resample_viz
+    hyperparams['scene_batch_size'] = 2
+    # hyperparams['node_resample_train'] = args.node_resample_train
+    # hyperparams['node_resample_eval'] = args.node_resample_eval
+    # hyperparams['scene_resample_train'] = args.scene_resample_train
+    # hyperparams['scene_resample_eval'] = args.scene_resample_eval
+    # hyperparams['scene_resample_viz'] = args.scene_resample_viz
     hyperparams['edge_encoding'] = not args.no_edge_encoding
 
     output_save_dir = os.path.join(model_dir, 'pred_figs')
@@ -112,7 +116,7 @@ def main():
     online_env = create_online_env(eval_env, hyperparams, scene_idx, init_timestep)
 
     model_registrar = ModelRegistrar(model_dir, args.eval_device)
-    model_registrar.load_models(iter_num=1999)
+    model_registrar.load_models(iter_num=99)
 
     trajectron = OnlineTrajectron(model_registrar,
                                   hyperparams,
